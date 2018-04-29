@@ -6,7 +6,7 @@ var dbConfig = require('./dbconfig.js');
 var app = express(); 
 var fs = require('fs'); 
 var setDb = require('./setDb.js');
-var hostname = '192.168.0.4'; //192.168.255.110 , 203.249.114.88 ,192.168.0.4
+var hostname = '192.168.0.3'; //192.168.255.110 , 203.249.114.88 ,192.168.0.4
 var port = 4000;                  // port 4000 지정  
 
 app.use(bodyParser.urlencoded({ extended: false }));  // extended:true를 해줘야 한다 .왜냐하면 url인코딩이 계속 적용될지 1번만 적용할지 묻는 것이기 때문
@@ -155,6 +155,43 @@ app.post('/infoDetail', function (req, res) { // 추가 사항 입력 코드
 	});
  res.end("yes");
 });
+
+//
+//app.post('/infusion', function(req, res){
+//	oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
+//	      user          : dbConfig.user,               // user
+//	      password      : dbConfig.password,           // password
+//	      connectString: dbConfig.connectString
+//	}, function(err, connection) {  
+//	     if (err) {                                   //err이벤트 발생시
+//	          console.error(err.message);             //err.message를 console창에 출력
+//	          return;  
+//	     }
+//	     console.log(req.body);                       	   // req.body 에 있는 모든 데이터를 console창에 출력	   
+//	     var infusion_speed;
+//	     
+//	     
+//	     console.log("temp = "+ temperature);              // console 창에 temperature 값 출력
+//	     console.log("bpm = " + bpm);	            	   // console 창에 bpm 값 출력
+//	     
+//	     connection.execute("INSERT INTO test VALUES(:TEMP, :BPM)", //execute를 통해 sql문 출력 가능하게끔 함 
+//	    		 [temperature,bpm],
+//	    		 { autoCommit: true },                              //autoCommit을 통해 Commit 자동화 
+//	    		 
+//	     function(err, result) {  									
+//	          if (err) {  
+//	               console.error(err.message);  
+//	               doRelease(connection);  
+//	               return;  
+//	          }  
+//	          else{
+//	        	  console.log("DB success");
+//	          }
+//	     }); 	     
+//	});
+//   res.end("yes");
+//});
+
 	
 
 app.post('/upload', function(req, res){                // "upload" 하며 post를 통해 db로 보내는 함수
@@ -168,28 +205,12 @@ app.post('/upload', function(req, res){                // "upload" 하며 post�
 	          return;  
 	     }
 	     console.log(req.body);                       	   // req.body 에 있는 모든 데이터를 console창에 출력	   
-	     temperature=req.body.temp;                        // req.body.temp값을 temperature 라는 변수에 저장
-	     bpm=req.body.bpm;								   // req.body.bpm값을   bpm 라는 변수에 저장
+	     var temperature=req.body.temp;                        // req.body.temp값을 temperature 라는 변수에 저장
+	     var bpm=req.body.bpm;								   // req.body.bpm값을   bpm 라는 변수에 저장
 	     console.log("temp = "+ temperature);              // console 창에 temperature 값 출력
 	     console.log("bpm = " + bpm);	            	   // console 창에 bpm 값 출력
 	     
-	     connection.execute("INSERT INTO test VALUES(:TEMP, :BPM)", //execute를 통해 sql문 출력 가능하게끔 함 
-	    		 [temperature,bpm],
-	    		 { autoCommit: true },                              //autoCommit을 통해 Commit 자동화 
-	    		 
-	     function(err, result) {  									
-	          if (err) {  
-	               console.error(err.message);  
-	               doRelease(connection);  
-	               return;  
-	          }  
-	          else{
-	        	  console.log("DB success");
-	          }
-	     }); 
-	     
-	     
-	     connection.execute("UPDATE yb SET TEMP = :a",
+	     connection.execute("UPDATE Medical_recoed SET body_temp = :a where id = 1",
 	    		 [temperature],
 	    		 { autoCommit: true },
 	    		 
@@ -204,7 +225,7 @@ app.post('/upload', function(req, res){                // "upload" 하며 post�
 	          }
 	     });  
 	     
-	     connection.execute("UPDATE yb SET BPM = :a",
+	     connection.execute("UPDATE Medical_recoed SET BPM = :a where id = 1",
 	    		 [bpm],
 	    		 { autoCommit: true },
 	    		 
