@@ -46,6 +46,7 @@ function calculation(a,b){
 //	        	  console.log("DB success");
 //	          }
 //	     }); 
+//
 
 function foo1(){
 	oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
