@@ -13,30 +13,56 @@ app.use(bodyParser.urlencoded({ extended: false }));  // extended:true를 해줘
 app.use(bodyParser.json());   
 
 
-//bodyparser에 있는 json 파일을 사용하겠다.
-app.get('/users', function(req, res){                      
- oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
-	      user          : dbConfig.user,               // user
-	      password      : dbConfig.password,           // password
-	      connectString: dbConfig.connectString
-	}, function(err, connection) {  
-	     if (err) {                                   //err이벤트 발생시
-	          console.error(err.message);             //err.message를 console창에 출력
-	          return;  
-	     }
-	     oracledb.outFormat = oracledb.OBJECT;
-	     connection.execute(
-	     		  'SELECT TEMP, BPM FROM sensor',
-	     		  
-	     		  function(err, result)
-	     		  {
-	     		    if (err) { console.error(err.message); return; }
-	     		   // var jsonSensor = JSON.stringify(result.rows);
-	     		    res.json(result.rows);
-	     		    console.log(result.rows);
-	     });     
-	});
-});
+
+	app.get('/users', function(req, res){                      
+		 oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
+			      user          : dbConfig.user,               // user
+			      password      : dbConfig.password,           // password
+			      connectString: dbConfig.connectString
+			}, function(err, connection) {  
+			     if (err) {                                   //err이벤트 발생시
+			          console.error(err.message);             //err.message를 console창에 출력
+			          return;  
+			     }
+			     oracledb.outFormat = oracledb.OBJECT;
+			     connection.execute(
+			     		  'SELECT TEMP, BPM FROM sensor',
+			     		  
+			     		  function(err, result)
+			     		  {
+			     		    if (err) { console.error(err.message); return; }
+			     		   // var jsonSensor = JSON.stringify(result.rows);
+			     		    res.json(result.rows);
+			     		    console.log(result.rows);
+			     });     
+			});
+		});	
+	
+	app.get('/infusionSelect', function(req, res){                      
+		 oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
+			      user          : dbConfig.user,               // user
+			      password      : dbConfig.password,           // password
+			      connectString: dbConfig.connectString
+			}, function(err, connection) {  
+			     if (err) {                                   //err이벤트 발생시
+			          console.error(err.message);             //err.message를 console창에 출력
+			          return;  
+			     }
+			     oracledb.outFormat = oracledb.OBJECT;
+			     connection.execute(
+			     		  'select infusion.id,infusion.infusion_name,infusion.infusion_total_amount,infusion.disease from infusion',
+			     		  
+			     		  function(err, result)
+			     		  {
+			     		    if (err) { console.error(err.message); return; }
+			     		   // var jsonSensor = JSON.stringify(result.rows);
+			     		    res.json(result.rows);
+			     		    console.log(result.rows);
+			     		//    console.log(result.rows[0].ID);  // result.rows[0]번째 줄의 ID를 로그창에 띄움
+			     });     
+			});
+		});
+
 
 app.get('/JoinSelect', function(req, res){                      
 	 oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
@@ -61,6 +87,59 @@ app.get('/JoinSelect', function(req, res){
 		     });     
 		});
 	});
+
+app.post('/delete', function (req, res) {
+	var post=req.body;
+  	res.send("회원정보가 등록되었습니다.");
+  	var id = post.id;
+  	
+  	oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
+	      user          : dbConfig.user,               // user
+	      password      : dbConfig.password,           // password
+	      connectString: dbConfig.connectString
+	}, function(err, connection) {  
+	     if (err) {                                   //err이벤트 발생시
+	          console.error(err.message);             //err.message를 console창에 출력
+	          return;  
+	     }
+	     
+	     console.log(id);
+	     connection.execute("DELETE from PatientInfo where id = :id ", //execute를 통해 sql문 출력 가능하게끔 함 
+	    		 {
+	    	 	  id : id,
+	    		 },
+	    		 { autoCommit: true },                              //autoCommit을 통해 Commit 자동화 
+	    		 
+	     function(err, result) {  									
+	          if (err) {  
+	               console.error(err.message);  
+	               doRelease(connection);  
+	               return;  
+	          }  
+	          else{
+	        	  console.log("patient_info delete");
+	          }
+	     }); 	     
+	     
+	     connection.execute("DELETE from Medical_record where id = :id ", //execute를 통해 sql문 출력 가능하게끔 함 
+	    		 {
+	    	 	  id : id,
+	    		 },
+	    		 { autoCommit: true },                              //autoCommit을 통해 Commit 자동화 
+	    		 
+	     function(err, result) {  									
+	          if (err) {  
+	               console.error(err.message);  
+	               doRelease(connection);  
+	               return;  
+	          }  
+	          else{
+	        	  console.log("Medical_record delete");
+	          }
+	     }); 	     
+	});
+ res.end("yes");
+});
 
 app.post('/register', function (req, res) {
 	var post=req.body;
@@ -156,41 +235,67 @@ app.post('/infoDetail', function (req, res) { // 추가 사항 입력 코드
  res.end("yes");
 });
 
-//
-//app.post('/infusion', function(req, res){
-//	oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
-//	      user          : dbConfig.user,               // user
-//	      password      : dbConfig.password,           // password
-//	      connectString: dbConfig.connectString
-//	}, function(err, connection) {  
-//	     if (err) {                                   //err이벤트 발생시
-//	          console.error(err.message);             //err.message를 console창에 출력
-//	          return;  
-//	     }
-//	     console.log(req.body);                       	   // req.body 에 있는 모든 데이터를 console창에 출력	   
-//	     var infusion_speed;
-//	     
-//	     
-//	     console.log("temp = "+ temperature);              // console 창에 temperature 값 출력
-//	     console.log("bpm = " + bpm);	            	   // console 창에 bpm 값 출력
-//	     
-//	     connection.execute("INSERT INTO test VALUES(:TEMP, :BPM)", //execute를 통해 sql문 출력 가능하게끔 함 
-//	    		 [temperature,bpm],
-//	    		 { autoCommit: true },                              //autoCommit을 통해 Commit 자동화 
-//	    		 
-//	     function(err, result) {  									
-//	          if (err) {  
-//	               console.error(err.message);  
-//	               doRelease(connection);  
-//	               return;  
-//	          }  
-//	          else{
-//	        	  console.log("DB success");
-//	          }
-//	     }); 	     
-//	});
-//   res.end("yes");
-//});
+
+
+
+app.get('/motor', function (req, res) { // 추가 사항 입력 코드
+	
+	var speed1 = 1;	
+	var motor_speed = speed1;
+	
+	res.json(speed1);
+		
+	res.end();
+});
+
+
+
+app.post('/infusion', function(req, res){
+	  var post=req.body;
+    res.send("회원정보가 등록되었습니다.");
+   	var id = post.id;
+  	var name = post.name;
+  	var total_amount = post.total;
+  	var disease = post.disease;
+  	
+  	console.log(id,name,total_amount,disease);
+    
+  	
+	oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
+	      user          : dbConfig.user,               // user
+	      password      : dbConfig.password,           // password
+	      connectString: dbConfig.connectString
+	}, function(err, connection) {  
+	     if (err) {                                   //err이벤트 발생시
+	          console.error(err.message);             //err.message를 console창에 출력
+	          return;  
+	     }
+	     console.log(req.body);                       	   // req.body 에 있는 모든 데이터를 console창에 출력	  
+	 
+	     connection.execute("INSERT INTO Infusion (id,Infusion_name,Infusion_total_amount,disease) VALUES(:ID, :NAME, :TOTAL ,:DISEASE)", //execute를 통해 sql문 출력 가능하게끔 함 
+	    		 {
+   	      			ID : id,
+   	      			NAME : name ,
+   	      			TOTAL : total_amount , 
+   	      			DISEASE : disease , 
+	    		 },
+	    		 { autoCommit: true },                              //autoCommit을 통해 Commit 자동화 
+	    		 
+	     function(err, result) {  									
+	          if (err) {  
+	               console.error(err.message);  
+	               doRelease(connection);  
+	               return;  
+	          }  
+	          else{
+	        	  console.log("DB success");
+	          }
+	     }); 	     
+	});
+
+		
+   res.end("yes");
+});
 
 	
 
@@ -210,8 +315,11 @@ app.post('/upload', function(req, res){                // "upload" 하며 post�
 	     console.log("temp = "+ temperature);              // console 창에 temperature 값 출력
 	     console.log("bpm = " + bpm);	            	   // console 창에 bpm 값 출력
 	     
-	     connection.execute("UPDATE Medical_recoed SET body_temp = :a where id = 1",
-	    		 [temperature],
+	     connection.execute("INSERT INTO SENSOR(TEMP,BPM) VALUES(:TEMP, :BPM)",
+	    		 {
+   			temp : temperature,
+   		    bpm : bpm,
+		 },
 	    		 { autoCommit: true },
 	    		 
 	     function(err, result) {  
@@ -221,12 +329,29 @@ app.post('/upload', function(req, res){                // "upload" 하며 post�
 	               return;  
 	          }  
 	          else{
-	        	  console.log("Temp success");
+	          }
+	     });  	 
+	     
+	     connection.execute("UPDATE Medical_record SET body_temp = :temp where id = 1",
+	    		 {
+      			temp : temperature,
+ 		 },
+	    		 { autoCommit: true },
+	    		 
+	     function(err, result) {  
+	          if (err) {  
+	               console.error(err.message);  
+	               doRelease(connection);  
+	               return;  
+	          }  
+	          else{
 	          }
 	     });  
 	     
-	     connection.execute("UPDATE Medical_recoed SET BPM = :a where id = 1",
-	    		 [bpm],
+	     connection.execute("UPDATE Medical_record SET BPM = :body_bpm where id = 1",
+	    		 {
+	    	 body_bpm : bpm,
+		 },
 	    		 { autoCommit: true },
 	    		 
 	     function(err, result) {  
@@ -236,7 +361,6 @@ app.post('/upload', function(req, res){                // "upload" 하며 post�
 	               return;  
 	          }  
 	          else{
-	        	  console.log("Bpm success");
 	          }
 	     });  
 	});
