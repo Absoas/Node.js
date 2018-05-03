@@ -6,13 +6,71 @@ var dbConfig = require('./dbconfig.js');
 var app = express(); 
 var fs = require('fs'); 
 var setDb = require('./setDb.js');
-var hostname = '192.168.0.3'; //192.168.255.110 , 203.249.114.88 ,192.168.0.4
+var hostname = '192.168.0.5'; //192.168.255.110 , 203.249.114.88 ,192.168.0.4
 var port = 4000;                  // port 4000 지정  
-
+//
 app.use(bodyParser.urlencoded({ extended: false }));  // extended:true를 해줘야 한다 .왜냐하면 url인코딩이 계속 적용될지 1번만 적용할지 묻는 것이기 때문
 app.use(bodyParser.json());   
 
+//motor 속도를 기준값(정상값) 10 으로 잡고 온도 심박을 계산해서 그걸 +1 -1 
 
+
+function calculation(a,b){
+	var c = a;
+	var d = b;
+	
+	console.log(c);
+	console.log(b);
+}
+	   
+//	   connection.execute("UPDATE infusion SET infusion_total_amount = :totaL_amount," +
+//	   		"infusion_speed = :speed," +
+//	   		"infusion_remain_time = :remain_time," +
+//	   		"infusion_remain_amount = :remain_amount," +
+//	   		" where id = 1)", //execute를 통해 sql문 출력 가능하게끔 함 
+//	    		 {
+//		   		totaL_amount : age , 
+//		   		speed : telephone , 
+//		   		remain_time : protector_name , 
+//		   		remain_amount : protector_name ,
+//	    		 },
+//	    		 { autoCommit: true },                              //autoCommit을 통해 Commit 자동화 
+//	    		 
+//	     function(err, result) {  									
+//	          if (err) {  
+//	               console.error(err.message);  
+//	               doRelease(connection);  
+//	               return;  
+//	          }  
+//	          else{
+//	        	  console.log("DB success");
+//	          }
+//	     }); 
+
+function foo1(){
+	oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
+	    user          : dbConfig.user,               // user
+	    password      : dbConfig.password,           // password
+	    connectString: dbConfig.connectString
+	}, function(err, connection) {  
+	   if (err) {                                   //err이벤트 발생시
+	        console.error(err.message);             //err.message를 console창에 출력
+	        return;  
+	   }
+	   oracledb.outFormat = oracledb.OBJECT;
+
+	   connection.execute(
+	   		  'select * from infusion',
+	   		  
+	   		  function(err, result)
+	   		  {
+	   		    if (err) { console.error(err.message); return; }
+	   		    console.log(result.rows);
+	   });     
+	});	
+}
+
+foo();
 
 	app.get('/users', function(req, res){                      
 		 oracledb.getConnection({                            // DB에 연결하기 위해 getConnection함수를 사용
@@ -314,6 +372,8 @@ app.post('/upload', function(req, res){                // "upload" 하며 post�
 	     var bpm=req.body.bpm;								   // req.body.bpm값을   bpm 라는 변수에 저장
 	     console.log("temp = "+ temperature);              // console 창에 temperature 값 출력
 	     console.log("bpm = " + bpm);	            	   // console 창에 bpm 값 출력
+	     
+	     calculation(temperature,bpm);
 	     
 	     connection.execute("INSERT INTO SENSOR(TEMP,BPM) VALUES(:TEMP, :BPM)",
 	    		 {
