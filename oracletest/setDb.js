@@ -28,7 +28,6 @@ var dodelete = function (conn, cb) {
 	      console.error(err.message); 
 	      return cb(err, conn);
 	    } else {
-	      console.log("delete sucess");
 	      return cb(null, conn);
 	    }
 	  });
@@ -44,8 +43,6 @@ var doselect = function (conn, cb) {
 		    	  console.log("fail");
 		        return cb(err, conn);
 		      } else {
-		        console.log("select success");
-		        console.log(result.rows);
 		        return cb(null, conn);
 		      }
 		    });
@@ -62,7 +59,6 @@ var doinsert = function(conn, cb) {
 					console.log("fail");
 					return cb(err, conn);
 				} else {
-					console.log("insert success");
 					return cb(null, conn);
 				}
 			});
